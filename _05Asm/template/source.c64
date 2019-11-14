@@ -1,0 +1,333 @@
+//----------------------------------------------------------
+//----------------------------------------------------------
+//					Compiler output
+//----------------------------------------------------------
+//----------------------------------------------------------
+    .const stacksize=100
+
+    .pc=$f0 "Data" virtual
+sp: .word 0
+r0: .word 0
+r1: .word 0
+r2: .word 0,0
+
+    .pc=$0801 "Basic"
+BasicUpstart(start)
+
+    .pc=$0810 "Code"
+_pushax:
+    tay
+    sec
+    lda sp
+    sbc #2
+    sta sp
+    bcs !skip+
+    dec sp+1
+!skip:
+    tya
+    ldy #0
+    sta (sp),y
+    iny
+    txa
+    sta (sp),y
+    rts
+
+_add:
+    ldy #0
+    clc
+    lda (sp),y
+    ldy #2
+    adc (sp),y
+    sta (sp),y
+    dey
+    lda (sp),y
+    ldy #3
+    adc (sp),y
+    sta (sp),y
+_drop1:
+    lda #2
+    clc
+    adc sp
+    sta sp
+    bcc !skip+
+    inc sp+1
+!skip:
+    rts
+
+_sub:
+    ldy #2
+    sec
+    lda (sp),y
+    ldy#0
+    sbc (sp),y
+    ldy #2
+    sta (sp),y
+    iny
+    lda (sp),y
+    ldy #1
+    sbc (sp),y
+    ldy #3
+    sta (sp),y
+    jmp _drop1
+
+//szorzás
+.var multiplier=r0
+.var multiplicand=r1
+.var product=r2
+
+_mul:
+    ldy #3
+!copy:
+    lda (sp),y
+    sta multiplier,y
+    dey
+    bpl !copy-
+    jsr _drop1
+    lda	#$00
+	sta	product+2
+	sta	product+3
+    ldx	#$10
+!shift_r:
+	lsr	multiplier+1
+	ror	multiplier
+	bcc	!rotate_r+
+	lda	product+2
+	clc
+	adc	multiplicand
+	sta	product+2
+	lda	product+3
+	adc	multiplicand+1
+!rotate_r:
+	ror
+	sta	product+3
+	ror	product+2
+	ror	product+1
+	ror	product
+	dex
+	bne	!shift_r-
+	iny
+	lda product
+	sta (sp),y
+	iny
+	lda product+1
+	sta (sp),y
+	rts
+
+//Osztás
+.macro Twoscomplement(reg){
+    lda reg+1
+	eor #$ff
+	sta reg+1
+	lda reg
+	eor #$ff
+	clc
+	adc #$01
+	sta reg
+	bne !skip+
+	inc reg+1
+!skip:
+}
+
+_NUCL_DIV16:
+	ldx #$00
+	lda r1+1
+	bpl !skip+
+	Twoscomplement(r1)
+	inx
+!skip:
+	lda r0+1
+	bpl !skip2+
+	Twoscomplement(r0)
+	inx
+!skip2:
+	txa
+	pha
+	jsr _NUCL_DIVU16
+	pla
+	and #$01
+	beq !q+
+	Twoscomplement(r1)
+!q:	rts
+
+_NUCL_DIVU16:
+.var divisor=r0
+.var dividend=r1
+.var remainder=r2
+.var result=dividend    // save memory by reusing divident to store the result
+
+	lda #0	            //preset remainder to 0
+	sta remainder
+	sta remainder+1
+	ldx #16	            //repeat for each bit: ...
+!divloop:
+	asl dividend	    //dividend lb & hb*2, msb -> Carry
+	rol dividend+1
+	rol remainder	    //remainder lb & hb * 2 + msb from carry
+	rol remainder+1
+	lda remainder
+	sec
+	sbc divisor	        //substract divisor to see if it fits in
+	tay	        	    //lb result -> Y, for we may need it later
+	lda remainder+1
+	sbc divisor+1
+	bcc !skip+		    //if carry=0 then divisor didn't fit in yet
+
+	sta remainder+1	//else save substraction result as new remainder,
+	sty remainder
+	inc result		    //and INCrement result cause divisor fit in 1 times
+!skip:
+	dex
+	bne !divloop-
+	rts
+
+_div:
+    ldy #3
+!copy:
+    lda (sp),y
+    sta r0,y
+    dey
+    bpl !copy-
+    jsr _NUCL_DIV16
+    jsr _drop1
+    ldy #0
+    lda r1
+    sta (sp),y
+    iny
+    lda r1+1
+    sta (sp),y
+    rts
+
+_rem:
+    ldy #3
+!copy:
+    lda (sp),y
+    sta r0,y
+    dey
+    bpl !copy-
+    jsr _NUCL_DIV16
+    jsr _drop1
+    ldy #0
+    lda r2
+    sta (sp),y
+    iny
+    lda r2+1
+    sta (sp),y
+    rts
+
+_printint:
+    ldy #1
+    lda (sp),y
+    pha
+    dey
+    lda (sp),y
+    tay
+    pla
+    jsr $B391
+    jsr $BDDD
+    jsr $AB1E
+    jmp _drop1
+
+_less:
+    ldy #3
+    sec
+    lda (sp),y
+    ldy #1
+    sbc (sp),y
+    ldy #2
+    lda (sp),y
+    ldy #0
+    sbc (sp),y
+    bvc !skip+
+    eor #$80
+!skip:
+    bpl _false
+    jmp _true
+
+_eq:
+    ldy #0
+    lda (sp),y
+    ldy #2
+    cmp (sp),y
+    bne _false
+    ldy #1
+    lda (sp),y
+    ldy#3
+    cmp (sp),y
+    bne _false
+_true:
+    ldx #0
+    .byte $2c
+_false:
+    ldx #$ff
+    jsr _drop1
+    txa
+    ldy #0
+    sta (sp),y
+    iny
+    sta (sp),y
+    rts
+
+_more:
+    ldy #1
+    sec
+    lda (sp),y
+    ldy #3
+    sbc (sp),y
+    ldy #0
+    lda (sp),y
+    ldy #2
+    sbc (sp),y
+    bvc !skip+
+    eor #$80
+!skip:
+    bpl _false
+    jmp _true
+
+_and:
+    ldy #0
+    lda (sp),y
+    ldy #2
+    and (sp),y
+    sta (sp),y
+    ldy #1
+    lda (sp),y
+    ldy #3
+    and (sp),y
+    sta (sp),y
+    jmp _drop1
+
+_or:
+    ldy #0
+    lda (sp),y
+    ldy #2
+    ora (sp),y
+    sta (sp),y
+    ldy #1
+    lda (sp),y
+    ldy #3
+    ora (sp),y
+    sta (sp),y
+    jmp _drop1
+
+//Fő program
+start:
+    lda #<stackseg
+    sta sp
+    lda #>stackseg
+    sta sp+1
+    //.break
+%codeseg%
+    rts
+
+//String literals
+    .pc=* "Strings"
+%stringseg%
+
+//Változók
+    .pc=* "Variables" virtual
+%varseg%
+
+//Data stack
+    .pc=* "Stack" virtual
+    .fill stacksize,0
+stackseg:
