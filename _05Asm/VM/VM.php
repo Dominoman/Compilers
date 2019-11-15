@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace ACME\_05Asm\VM;
+namespace ACME\_05ASM\VM;
 
 use Exception;
 
 /**
  * Class VM
- * @package ACME\_05Asm\VM
+ * @package ACME\_04Advanced\VM
  */
 class VM
 {
@@ -29,7 +29,7 @@ class VM
     public const AND = 14;
     public const OR = 15;
     public const JUMP = 16;
-    public const N0JUMP = 17;
+    public const JUMP0 = 17;
 
     /**
      * @var array
@@ -113,15 +113,15 @@ class VM
                 break;
             case self::EQ:
                 $this->sp++;
-                $this->memory[$this->sp + 1] = $this->memory[$this->sp + 1] == $this->memory[$this->sp] ? 0 : -1;
+                $this->memory[$this->sp + 1] = $this->memory[$this->sp + 1] == $this->memory[$this->sp] ? -1 : 0;
                 break;
             case self::LESS:
                 $this->sp++;
-                $this->memory[$this->sp + 1] = $this->memory[$this->sp + 1] < $this->memory[$this->sp] ? 0 : -1;
+                $this->memory[$this->sp + 1] = $this->memory[$this->sp + 1] < $this->memory[$this->sp] ? -1 : 0;
                 break;
             case self::GREATER:
                 $this->sp++;
-                $this->memory[$this->sp + 1] = $this->memory[$this->sp + 1] > $this->memory[$this->sp] ? 0 : -1;
+                $this->memory[$this->sp + 1] = $this->memory[$this->sp + 1] > $this->memory[$this->sp] ? -1 : 0;
                 break;
             case self::AND:
                 $this->sp++;
@@ -134,9 +134,9 @@ class VM
             case self::JUMP:
                 $this->pc = $this->memory[$this->pc];
                 break;
-            case self::N0JUMP:
+            case self::JUMP0:
                 $this->sp++;
-                if ($this->memory[$this->sp] != 0) {
+                if ($this->memory[$this->sp] == 0) {
                     $this->pc = $this->memory[$this->pc];
                 } else {
                     $this->pc++;

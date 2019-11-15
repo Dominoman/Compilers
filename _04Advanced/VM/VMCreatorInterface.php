@@ -52,5 +52,5 @@ interface VMCreatorInterface
     /**
      * @param string $labelName
      */
-    public function createN0Jump(string $labelName): void;
+    public function createJump0(string $labelName): void;
 }

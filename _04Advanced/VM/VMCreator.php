@@ -151,9 +151,9 @@ class VMCreator implements VMCreatorInterface
     /**
      * @param string $labelName
      */
-    public function createN0Jump(string $labelName): void
+    public function createJump0(string $labelName): void
     {
-        $this->vm->assemble(VM::N0JUMP);
+        $this->vm->assemble(VM::JUMP0);
         $this->vm->assemble($this->getLabelValue($labelName));
     }
 }

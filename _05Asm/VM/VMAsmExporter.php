@@ -176,7 +176,7 @@ class VMAsmExporter implements VMCreatorInterface
     /**
      * @param string $labelName
      */
-    public function createN0Jump(string $labelName): void
+    public function createJump0(string $labelName): void
     {
         $this->codeseg .= "    ldy #0
     lda (sp),y
@@ -185,7 +185,7 @@ class VMAsmExporter implements VMCreatorInterface
     pha
     jsr _drop1
     pla
-    beq !longjumpfix+
+    bne !longjumpfix+
     jmp $labelName
 !longjumpfix:\r\n";
     }

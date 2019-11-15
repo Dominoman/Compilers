@@ -255,10 +255,10 @@ _eq:
     cmp (sp),y
     bne _false
 _true:
-    ldx #0
+    ldx #$ff
     .byte $2c
 _false:
-    ldx #$ff
+    ldx #$00
     jsr _drop1
     txa
     ldy #0

@@ -45,7 +45,7 @@ class IfAst extends AbstractCommand
         $this->expr->compileMe($vmc);
         $iffalse = $vmc->allocateLabel("iffalse");
         $ifend = $vmc->allocateLabel("ifend");
-        $vmc->createN0Jump($iffalse);
+        $vmc->createJump0($iffalse);
         $this->doTrue->compileMe($vmc);
         if ($this->doFalse != null) {
             $vmc->createJump($ifend);

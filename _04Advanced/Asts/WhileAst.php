@@ -42,7 +42,7 @@ class WhileAst extends AbstractCommand
         $wend = $vmc->allocateLabel("whileend");
         $vmc->createLabel($wbegin);
         $this->expr->compileMe($vmc);
-        $vmc->createN0Jump($wend);
+        $vmc->createJump0($wend);
         $this->do->compileMe($vmc);
         $vmc->createJump($wbegin);
         $vmc->createLabel($wend);

@@ -7,6 +7,7 @@ use ACME\_04Advanced\VM\VMCreator;
 require_once __DIR__ . '/vendor/autoload.php';
 
 $script = <<<EOT
+//Fibonacci
 a=1;b=1;i=0;
 while(i<10){
     if(i<2){

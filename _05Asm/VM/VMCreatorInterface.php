@@ -4,7 +4,7 @@ namespace ACME\_05Asm\VM;
 
 /**
  * Interface VMCreatorInterface
- * @package ACME\_05Asm\VM
+ * @package ACME\_04Advanced\VM
  */
 interface VMCreatorInterface
 {
@@ -52,5 +52,5 @@ interface VMCreatorInterface
     /**
      * @param string $labelName
      */
-    public function createN0Jump(string $labelName): void;
+    public function createJump0(string $labelName): void;
 }

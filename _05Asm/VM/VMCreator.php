@@ -6,7 +6,7 @@ namespace ACME\_05Asm\VM;
 
 /**
  * Class VMCreator
- * @package ACME\_05Asm\VM
+ * @package ACME\_04Advanced\VM
  */
 class VMCreator implements VMCreatorInterface
 {
@@ -95,7 +95,9 @@ class VMCreator implements VMCreatorInterface
     {
         $this->vm->assemble(VM::PRS);
         $this->vm->assemble(strlen($out));
-        for ($i = 0; $i < strlen($out); $i++) {
+        for (
+            $i = 0; $i < strlen($out); $i++
+        ) {
             $this->vm->assemble(ord($out[$i]));
         }
     }
@@ -149,9 +151,9 @@ class VMCreator implements VMCreatorInterface
     /**
      * @param string $labelName
      */
-    public function createN0Jump(string $labelName): void
+    public function createJump0(string $labelName): void
     {
-        $this->vm->assemble(VM::N0JUMP);
+        $this->vm->assemble(VM::JUMP0);
         $this->vm->assemble($this->getLabelValue($labelName));
     }
 }
