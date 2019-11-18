@@ -24,17 +24,12 @@ class Token
     /**
      * @var int
      */
-    public $tokenType;
+    private $tokenType;
 
     /**
-     * @var int
+     * @var mixed
      */
-    public $nValue;
-
-    /**
-     * @var string
-     */
-    public $sValue;
+    private $value;
 
     /**
      * Token constructor.
@@ -44,16 +39,12 @@ class Token
     public function __construct(int $tokenType, $value = 0)
     {
         $this->tokenType = $tokenType;
-        if (is_string($value)) {
-            $this->sValue = $value;
-            if ($tokenType == self::TTID) {
-                $p = array_search($value, self::KEYWORDS);
-                if ($p !== false) {
-                    $this->tokenType = self::TTPRINT - $p;
-                }
+        $this->value = $value;
+        if ($tokenType == self::TTID) {
+            $p = array_search($value, self::KEYWORDS);
+            if ($p !== false) {
+                $this->tokenType = self::TTPRINT - $p;
             }
-        } else {
-            $this->nValue = $value;
         }
     }
 
@@ -86,13 +77,29 @@ class Token
     {
         switch ($this->tokenType) {
             case self::TTID:
-                return "<ID:$this->sValue>";
+                return "<ID:$this->value>";
             case self::TTNUMBER:
-                return "<NUMBER:$this->nValue>";
+                return "<NUMBER:$this->value>";
             case self::TTSTRING:
-                return "<STRING:$this->sValue>";
+                return "<STRING:$this->value>";
             default:
                 return self::toString($this->tokenType);
         }
+    }
+
+    /**
+     * @return int
+     */
+    public function getTokenType(): int
+    {
+        return $this->tokenType;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getValue()
+    {
+        return $this->value;
     }
 }

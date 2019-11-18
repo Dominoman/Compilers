@@ -20,12 +20,12 @@ abstract class AbstractLexer
     /**
      * @var string
      */
-    protected $c;
+    protected $currentChar;
 
     /**
      * @var int
      */
-    private $p;
+    private $pointer = 0;
 
     /**
      * AbstractLexer constructor.
@@ -34,7 +34,7 @@ abstract class AbstractLexer
     public function __construct(string $input)
     {
         $this->input = $input;
-        $this->c = strlen($input) > 0 ? $input[0] : self::EOF;
+        $this->currentChar = strlen($input) > 0 ? $input[0] : self::EOF;
     }
 
     /**
@@ -42,8 +42,8 @@ abstract class AbstractLexer
      */
     protected function consume(): void
     {
-        $this->p++;
-        $this->c = $this->p < strlen($this->input) ? $this->input[$this->p] : self::EOF;
+        $this->pointer++;
+        $this->currentChar = $this->pointer < strlen($this->input) ? $this->input[$this->pointer] : self::EOF;
     }
 
     /**

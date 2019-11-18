@@ -85,7 +85,7 @@ class Parser
      */
     protected function la(int $i): int
     {
-        return $this->lt($i)->tokenType;
+        return $this->lt($i)->getTokenType();
     }
 
     /**

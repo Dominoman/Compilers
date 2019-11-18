@@ -42,7 +42,7 @@ class ScriptParser extends Parser
             return null;
         }
         if ($this->la(1) == Token::TTID && $this->la(2) == ord('=')) {
-            $variable = $this->lt(1)->sValue;
+            $variable = $this->lt(1)->getValue();
             $this->consume();
             $this->consume();
             $command = new SetAst($variable, $this->parseExpression());
@@ -52,7 +52,7 @@ class ScriptParser extends Parser
         if ($this->la(1) == Token::TTPRINT) {
             $this->consume();
             if ($this->la(1) == Token::TTSTRING) {
-                $command = new PrintAst($this->lt(1)->sValue);
+                $command = new PrintAst($this->lt(1)->getValue());
                 $this->consume();
                 $this->match(ord(';'));
                 return $command;
@@ -191,7 +191,7 @@ class ScriptParser extends Parser
         }
         if ($this->la(1) == Token::TTNUMBER) {
             /** @var int $value */
-            $value = $this->lt(1)->nValue;
+            $value = $this->lt(1)->getValue();
             $this->consume();
             return new ConstAst($value);
         }
@@ -202,7 +202,7 @@ class ScriptParser extends Parser
             return $subexpression;
         }
         if ($this->la(1) == Token::TTID) {
-            $variable = $this->lt(1)->sValue;
+            $variable = $this->lt(1)->getValue();
             $this->consume();
             return new VariableAst($variable);
         }

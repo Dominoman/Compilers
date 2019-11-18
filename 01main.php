@@ -14,7 +14,7 @@ EOT;
 
 $lexer = new ScriptLexer($script);
 $token = $lexer->getNextToken();
-while ($token->tokenType != Token::TTEOF) {
+while ($token->getTokenType() != Token::TTEOF) {
     print $token . "\n";
     $token = $lexer->getNextToken();
 }

@@ -32,90 +32,27 @@ class ScriptLexer extends AbstractLexer
     {
         parent::__construct($input);
         $this->ctype = array_fill(0, 256, self::NONE);
-        $this->addWhiteSpaces(0, ' ');
-        $this->addAlphas('a', 'z');
-        $this->addAlphas('A', 'Z');
-        $this->addAlphas('0', '9');
-        $this->addAlpha('_');
-        $this->addQuote('"');
-        $this->addComment('/');
-        $this->parseNumber();
+        $this->setFlag(0, ' ', self::WHITESPACE);
+        $this->setFlag('a', 'z', self::ALPHA);
+        $this->setFlag('A', 'Z', self::ALPHA);
+        $this->setFlag('0', '9', self::ALPHA);
+        $this->setFlag('0', '9', self::NUMBER);
+        $this->setFlag('_', '_', self::ALPHA);
+        $this->setFlag('"', '"', self::QUOTE);
+        $this->setFlag('/', '/', self::COMMENT);
     }
 
     /**
-     * @param mixed $low
-     * @param mixed $hi
+     * @param $low
+     * @param $hi
+     * @param int $flag
      */
-    private function addWhiteSpaces($low, $hi): void
+    private function setFlag($low, $hi, int $flag): void
     {
-        if (is_string($low)) {
-            $low = ord($low);
-        }
-        if (is_string($hi)) {
-            $hi = ord($hi);
-        }
+        $low = is_string($low) ? ord($low) : $low;
+        $hi = is_string($hi) ? ord($hi) : $hi;
         while ($low <= $hi) {
-            $this->ctype[$low++] |= self::WHITESPACE;
-        }
-    }
-
-    /**
-     * @param mixed $low
-     * @param mixed $hi
-     */
-    private function addAlphas($low, $hi): void
-    {
-        if (is_string($low)) {
-            $low = ord($low);
-        }
-        if (is_string($hi)) {
-            $hi = ord($hi);
-        }
-        while ($low <= $hi) {
-            $this->ctype[$low++] |= self::ALPHA;
-        }
-    }
-
-    /**
-     * @param string|int $ch
-     */
-    private function addAlpha($ch): void
-    {
-        if (is_string($ch)) {
-            $ch = ord($ch);
-        }
-        $this->ctype[$ch] |= self::ALPHA;
-    }
-
-    /**
-     * @param string|int $ch
-     */
-    private function addQuote($ch): void
-    {
-        if (is_string($ch)) {
-            $ch = ord($ch);
-        }
-        $this->ctype[$ch] |= self::QUOTE;
-    }
-
-    /**
-     * @param string|int $ch
-     */
-    private function addComment($ch): void
-    {
-        if (is_string($ch)) {
-            $ch = ord($ch);
-        }
-        $this->ctype[$ch] |= self::COMMENT;
-    }
-
-    /**
-     *
-     */
-    private function parseNumber(): void
-    {
-        for ($i = ord('0'); $i <= ord('9'); $i++) {
-            $this->ctype[$i] |= self::NUMBER;
+            $this->ctype[$low++] |= $flag;
         }
     }
 
@@ -125,8 +62,8 @@ class ScriptLexer extends AbstractLexer
      */
     private function hasFlag(int $flag): bool
     {
-        $ch = ord($this->c);
-        $f = (0 <= $ch && $ch < count($this->ctype)) ? $this->ctype[$ch] : self::ALPHA;
+        $ch = ord($this->currentChar);
+        $f = $this->ctype[$ch] ?? self::ALPHA;
         return ($f & $flag) > 0;
     }
 
@@ -136,12 +73,12 @@ class ScriptLexer extends AbstractLexer
      */
     public function getNextToken(): Token
     {
-        while ($this->c != self::EOF) {
+        while ($this->currentChar != self::EOF) {
             if ($this->hasFlag(self::WHITESPACE)) {
                 $this->skipWhitespaces();
             } elseif ($this->hasFlag(self::COMMENT)) {
                 $this->consume();
-                if ($this->c == '/') {
+                if ($this->currentChar == '/') {
                     $this->skipCommentLine();
                 } else {
                     return new Token(ord('/'));
@@ -151,9 +88,9 @@ class ScriptLexer extends AbstractLexer
             } elseif ($this->hasFlag(self::ALPHA)) {
                 return $this->getID();
             } elseif ($this->hasFlag(self::QUOTE)) {
-                return $this->getString($this->c);
+                return $this->getString($this->currentChar);
             } else {
-                $tmp = $this->c;
+                $tmp = $this->currentChar;
                 $this->consume();
                 return new Token(ord($tmp));
             }
@@ -166,9 +103,9 @@ class ScriptLexer extends AbstractLexer
      */
     private function getID(): Token
     {
-        $tmp = "";
-        while ($this->hasFlag(self::ALPHA) && $this->c != self::EOF) {
-            $tmp .= $this->c;
+        $tmp = '';
+        while ($this->hasFlag(self::ALPHA) && $this->currentChar != self::EOF) {
+            $tmp .= $this->currentChar;
             $this->consume();
         }
         return $tmp === "print" ? new Token(Token::TTPRINT) : new Token(Token::TTID, $tmp);
@@ -179,9 +116,9 @@ class ScriptLexer extends AbstractLexer
      */
     private function getNumber(): Token
     {
-        $tmp = "";
+        $tmp = '';
         while ($this->hasFlag(self::NUMBER)) {
-            $tmp .= $this->c;
+            $tmp .= $this->currentChar;
             $this->consume();
         }
         return new Token(Token::TTNUMBER, intval($tmp));
@@ -194,13 +131,13 @@ class ScriptLexer extends AbstractLexer
      */
     private function getString(string $ch): Token
     {
-        $tmp = "";
+        $tmp = '';
         $this->consume();
-        while ($this->c != $ch) {
-            if ($this->c == self::EOF) {
+        while ($this->currentChar != $ch) {
+            if ($this->currentChar == self::EOF) {
                 throw new Exception("Missing closing quote!");
             }
-            $tmp .= $this->c;
+            $tmp .= $this->currentChar;
             $this->consume();
         }
         $this->consume();
@@ -212,7 +149,7 @@ class ScriptLexer extends AbstractLexer
      */
     private function skipCommentLine(): void
     {
-        while ($this->c != "\n" && $this->c != "\r" && $this->c != self::EOF) {
+        while (!in_array($this->currentChar, ["\n","\r",self::EOF])) {
             $this->consume();
         }
     }
