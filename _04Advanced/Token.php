@@ -64,9 +64,9 @@ class Token
             case self::TTSTRING:
                 return "<STRING>";
             default:
-                return "<" . $tokenType <= self::TTPRINT ?
+                return "<" . ($tokenType <= self::TTPRINT ?
                     self::KEYWORDS[self::TTPRINT - $tokenType] :
-                    chr($tokenType) . ">";
+                    chr($tokenType)) . ">";
         }
     }
 
