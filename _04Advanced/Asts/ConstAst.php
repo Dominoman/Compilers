@@ -34,7 +34,6 @@ class ConstAst extends AbstractAst
         return strval($this->value);
     }
 
-
     /**
      * @param VMCreatorInterface $vmc
      * @return mixed

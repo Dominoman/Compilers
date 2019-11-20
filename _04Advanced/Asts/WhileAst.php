@@ -31,6 +31,14 @@ class WhileAst extends AbstractCommand
         $this->expr = $expr;
     }
 
+    /**
+     * @return string
+     */
+    public function __toString(): string
+    {
+        $tmp = "while($this->expr) {\r\n$this->do}\r\n";
+        return $tmp;
+    }
 
     /**
      * @param VMCreatorInterface $vmc

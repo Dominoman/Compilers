@@ -37,6 +37,18 @@ class IfAst extends AbstractCommand
     }
 
     /**
+     * @return string
+     */
+    public function __toString(): string
+    {
+        $tmp = "if ($this->expr){\r\n$this->doTrue}\r\n";
+        if ($this->doFalse != null) {
+            $tmp .= "else {\r\n$this->doFalse}\r\n";
+        }
+        return $tmp;
+    }
+
+    /**
      * @param VMCreatorInterface $vmc
      * @return mixed
      */

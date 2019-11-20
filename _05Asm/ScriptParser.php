@@ -41,6 +41,30 @@ class ScriptParser extends Parser
         if ($this->la(1) == Token::TTEOF) {
             return null;
         }
+        return $this->parseCommand();
+    }
+
+    /**
+     * @return DoCommands
+     * @throws Exception
+     */
+    private function parseBlock(): DoCommands
+    {
+        $block = new DoCommands();
+        $this->match(ord('{'));
+        while ($this->la(1) != ord('}')) {
+            $block->addCommand($this->parseCommand());
+        }
+        $this->consume();
+        return $block;
+    }
+
+    /**
+     * @return AbstractCommand
+     * @throws Exception
+     */
+    private function parseCommand(): AbstractCommand
+    {
         if ($this->la(1) == Token::TTID && $this->la(2) == ord('=')) {
             $variable = $this->lt(1)->getValue();
             $this->consume();
@@ -82,21 +106,6 @@ class ScriptParser extends Parser
             return $command;
         }
         throw new Exception("Syntax error! {$this->lt(1)}");
-    }
-
-    /**
-     * @return DoCommands
-     * @throws Exception
-     */
-    private function parseBlock(): DoCommands
-    {
-        $block = new DoCommands();
-        $this->match(ord('{'));
-        while ($this->la(1) != ord('}')) {
-            $block->addCommand($this->parse());
-        }
-        $this->consume();
-        return $block;
     }
 
     /**

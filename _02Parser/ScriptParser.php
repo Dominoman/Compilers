@@ -37,6 +37,15 @@ class ScriptParser extends Parser
         if ($this->la(1) == Token::TTEOF) {
             return null;
         }
+        return $this->parseCommand();
+    }
+
+    /**
+     * @return AbstractAst
+     * @throws Exception
+     */
+    private function parseCommand(): AbstractAst
+    {
         if ($this->la(1) == Token::TTID && $this->la(2) == ord('=')) {
             $variable = $this->lt(1)->getValue();
             $this->consume();

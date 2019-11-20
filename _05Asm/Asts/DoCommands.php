@@ -27,6 +27,18 @@ class DoCommands extends AbstractCommand
     }
 
     /**
+     * @return string
+     */
+    public function __toString(): string
+    {
+        $tmp = "";
+        foreach ($this->commands as $command) {
+            $tmp .= $command . ";\r\n";
+        }
+        return $tmp;
+    }
+
+    /**
      * @param VMCreatorInterface $vmc
      * @return mixed
      */
